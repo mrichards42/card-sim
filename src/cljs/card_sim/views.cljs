@@ -11,10 +11,21 @@
 (defn plotly-render [] [:div.plot])
 
 (defn plotly-did-mount
-  [this]
+  [listener this]
   (let [plot-el (reagent/dom-node this)
-        {:keys [data layout]} (reagent/props this)]
-    (js/Plotly.newPlot plot-el (clj->js data) (clj->js layout))))
+        {:keys [data layout]} (reagent/props this)
+        resize-listener #(js/Plotly.Plots.resize plot-el)]
+    (js/Plotly.newPlot plot-el (clj->js data) (clj->js layout))
+    ;; Add the resize listener.
+    (reset! listener resize-listener)
+    (.addEventListener js/window "resize" resize-listener)))
+
+(defn plotly-will-unmount
+  [listener this]
+  ;; Kill the resize listener.
+  (when-not (nil? @listener)
+    (.removeEventListener js/window "resize" @listener)
+    (reset! listener nil)))
 
 (defn plotly-did-update
   [this]
@@ -29,9 +40,14 @@
 
 (defn plotly
   []
-  (reagent/create-class {:reagent-render plotly-render
-                         :component-did-mount plotly-did-mount
-                         :component-did-update plotly-did-update}))
+  ;; Keep a reference to the window resize listener so we can remove it
+  ;; when the component unmounts
+  (let [listener (atom nil)]
+    (reagent/create-class
+      {:reagent-render plotly-render
+       :component-did-mount (partial plotly-did-mount listener)
+       :component-did-update plotly-did-update
+       :component-will-unmount (partial plotly-will-unmount listener)})))
 
 ;;; Cards
 
