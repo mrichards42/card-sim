@@ -1,0 +1,11 @@
+language: clojure
+script: lein build
+
+# Automatically deploy to gh-pages
+deploy:
+  provider: pages
+  skip-cleanup: true
+  github-token: $GITHUB_TOKEN
+  local-dir: resources/public
+  on:
+    branch: master
