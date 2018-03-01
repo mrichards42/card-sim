@@ -31,11 +31,9 @@
   [this]
   (let [plot-el (reagent/dom-node this)
         {:keys [data layout]} (reagent/props this)]
-    (println "Updating plotly with" (clj->js {:data data :layout layout}))
     ;; A little hacky, but plotly will work fine if we edit the data directly
     (set! (.-data plot-el) (clj->js data))
     (set! (.-layout plot-el) (clj->js layout))
-    (println "Data is set")
   (js/Plotly.redraw plot-el)))
 
 (defn plotly
@@ -81,7 +79,6 @@
        ; run simulation button
        [:button
         {:on-click (fn []
-                     (println "simulation start" (js/Date.now))
                      (re-frame/dispatch [::events/run-simulation
                                              @simulation-count]))}
         "Run Simulation(s)"]
