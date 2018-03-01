@@ -1,0 +1,21 @@
+# re-frame-template default gitignore
+/*.log
+/target
+/*-init.clj
+/resources/public/js/compiled
+out
+
+# github default leiningen gitignore
+pom.xml
+pom.xml.asc
+*.jar
+*.class
+/lib/
+/classes/
+/target/
+/checkouts/
+.lein-deps-sum
+.lein-repl-history
+.lein-plugins/
+.lein-failures
+.nrepl-port
