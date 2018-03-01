@@ -1,12 +1,12 @@
 (ns card-sim.views
   (:require [reagent.core :as reagent]
             [re-frame.core :as re-frame]
-            [cljsjs.plotly]
             [card-sim.subs :as subs]
             [card-sim.events :as events]
             ))
 
 ;;; Plotly component
+;; Plotly is provided from the cdn so the bundle isn't huge
 
 (defn plotly-render [] [:div.plot])
 
