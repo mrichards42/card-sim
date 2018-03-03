@@ -18,5 +18,5 @@
 (re-frame/reg-sub
   ::simulation-graph
   (fn [db]
-    {:data [(build-histogram-trace (get-in db [:simulation :bins]))]
+    {:data [(build-histogram-trace (get-in db [:simulation :bins [0 0]]))]
      :layout {}}))
