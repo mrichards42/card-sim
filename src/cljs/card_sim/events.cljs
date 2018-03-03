@@ -43,7 +43,7 @@
          bad-count 0
          [first-card & rest-cards :as cards] cards]
     (let [card-count (count cards)]
-      (if (= 1 card-count)
+      (if (= 0 card-count)
         ;; The last card ends the game, so it is not added to the map
         bins
         ;; Add to the frequency map for this [good, bad] pair
