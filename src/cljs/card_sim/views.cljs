@@ -4,102 +4,9 @@
             [clojure.string :as str]
             [card-sim.subs :as subs]
             [card-sim.events :as events]
+            [card-sim.views.plotly :as plotly]
+            [card-sim.views.card :as card]
             ))
-
-;;; Plotly component
-;; Plotly is provided from the cdn so the bundle isn't huge
-
-(defn plotly-events
-  "Return a sequence of [event-name handler] pairs of Plotly events."
-  [props]
-  (letfn [(is-event? [kw] (str/starts-with? (name kw) "on-plotly-"))
-          (event-name [kw] (-> (name kw)
-                               (str/replace #"^on-" "")
-                               (str/replace #"-" "_")))]
-    (->> props
-      (filter #(is-event? (first %)))
-      (map #(vector (event-name (first %)) (second %))))))
-
-(defn plotly-rebind-events
-  "Remove all events from the plotly element and bind new events."
-  [plot-el props]
-  (.removeAllListeners plot-el)
-  (doseq [[event-name handler] (plotly-events props)]
-    (.on plot-el event-name handler)))
-
-(defn plotly-new-plot
-  "Create a new Plotly plot from props."
-  [plot-el {:keys [data layout] :as props}]
-  (js/Plotly.newPlot plot-el (clj->js data) (clj->js layout))
-  (plotly-rebind-events plot-el props))
-
-(defn plotly-update-plot
-  "Update an existing plot."
-  [plot-el {:keys [data layout] :as props}]
-  ;; A little hacky, but plotly usually works if we edit the data directly
-  (set! (.-data plot-el) (clj->js data))
-  (set! (.-layout plot-el) (clj->js layout))
-  ;; Sometimes redraw breaks, in which case we just need a new plot.
-  (try
-    (js/Plotly.redraw plot-el)
-    (catch :default e
-      (plotly-new-plot plot-el props))))
-
-;; Lifecycle handlers
-(defn plotly-render [] [:div.plot])
-
-(defn plotly-did-mount
-  [listener this]
-  (let [plot-el (reagent/dom-node this)
-        props (reagent/props this)
-        resize-listener #(js/Plotly.Plots.resize plot-el)]
-    (plotly-new-plot plot-el props)
-    ;; Add the resize listener.
-    (reset! listener resize-listener)
-    (.addEventListener js/window "resize" resize-listener)))
-
-(defn plotly-will-unmount
-  [listener this]
-  ;; Remove all Plotly data (including Plotly events)
-  (js/Plotly.purge (reagent/dom-node this))
-  ;; Kill the resize listener.
-  (when-not (nil? @listener)
-    (.removeEventListener js/window "resize" @listener)
-    (reset! listener nil)))
-
-(defn plotly-did-update
-  [this]
-  (let [plot-el (reagent/dom-node this)
-        props (reagent/props this)]
-    (plotly-update-plot plot-el props)))
-
-(defn plotly
-  []
-  ;; Keep a reference to the window resize listener so we can remove it
-  ;; when the component unmounts
-  (let [listener (atom nil)]
-    (reagent/create-class
-      {:reagent-render plotly-render
-       :component-did-mount (partial plotly-did-mount listener)
-       :component-did-update plotly-did-update
-       :component-will-unmount (partial plotly-will-unmount listener)})))
-
-;;; Cards
-
-(defn card-class [card] (str "card card--" (name card)))
-
-(defn static-card-list
-  "Card list with a static list of cards."
-  [cards]
-  [:ul {:class "card-list"}
-   (for [card cards]
-     [:li {:class (card-class card)} card])])
-
-(defn card-list
-  "Card list component with a subscription."
-  [subscribe-args]
-   (let [deck (re-frame/subscribe subscribe-args)]
-     [static-card-list @deck]))
 
 ;;; Simulation components
 
@@ -109,7 +16,7 @@
    (simulation-histogram [0 0]))
   ([bins-key]
    (let [graph-data (re-frame/subscribe [::subs/simulation-graph bins-key])]
-    (fn [] [plotly @graph-data])))
+     (fn [] [plotly/plot @graph-data])))
 
 (defn simulation-contols
   []
@@ -131,10 +38,12 @@
         {:on-click #(re-frame/dispatch [::events/reset-simulation])}
         "Reset"]])))
 
+;;; Main page
+
 (defn main-panel []
   [:div.app
-   [:div "All cards" [card-list [::subs/deck]]]
+   [:div "All cards" [card/card-list [::subs/deck]]]
    [simulation-contols]
-     [:div "Last round" [card-list [::subs/last-round]] ]
+     [:div "Last round" [card/card-list [::subs/last-round]] ]
      [simulation-histogram]])
 
