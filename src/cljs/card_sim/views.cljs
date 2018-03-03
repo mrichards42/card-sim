@@ -70,9 +70,12 @@
 
 ;;; Simulation components
 
-(defn simulation-graph []
-  "A bar graph for a simulation."
-  (let [graph-data (re-frame/subscribe [::subs/simulation-graph])]
+(defn simulation-histogram
+  "A histogram of round-length frequency."
+  ([]
+   (simulation-histogram [0 0]))
+  ([bins-key]
+   (let [graph-data (re-frame/subscribe [::subs/simulation-graph bins-key])]
     (fn [] [plotly @graph-data])))
 
 (defn simulation-contols
@@ -100,5 +103,5 @@
    [:div "All cards" [card-list [::subs/deck]]]
    [simulation-contols]
      [:div "Last round" [card-list [::subs/last-round]] ]
-     [simulation-graph]])
+     [simulation-histogram]])
 
