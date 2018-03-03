@@ -1,6 +1,7 @@
 (ns card-sim.views
   (:require [reagent.core :as reagent]
             [re-frame.core :as re-frame]
+            [clojure.string :as str]
             [card-sim.subs :as subs]
             [card-sim.events :as events]
             ))
@@ -8,20 +9,59 @@
 ;;; Plotly component
 ;; Plotly is provided from the cdn so the bundle isn't huge
 
+(defn plotly-events
+  "Return a sequence of [event-name handler] pairs of Plotly events."
+  [props]
+  (letfn [(is-event? [kw] (str/starts-with? (name kw) "on-plotly-"))
+          (event-name [kw] (-> (name kw)
+                               (str/replace #"^on-" "")
+                               (str/replace #"-" "_")))]
+    (->> props
+      (filter #(is-event? (first %)))
+      (map #(vector (event-name (first %)) (second %))))))
+
+(defn plotly-rebind-events
+  "Remove all events from the plotly element and bind new events."
+  [plot-el props]
+  (.removeAllListeners plot-el)
+  (doseq [[event-name handler] (plotly-events props)]
+    (.on plot-el event-name handler)))
+
+(defn plotly-new-plot
+  "Create a new Plotly plot from props."
+  [plot-el {:keys [data layout] :as props}]
+  (js/Plotly.newPlot plot-el (clj->js data) (clj->js layout))
+  (plotly-rebind-events plot-el props))
+
+(defn plotly-update-plot
+  "Update an existing plot."
+  [plot-el {:keys [data layout] :as props}]
+  ;; A little hacky, but plotly usually works if we edit the data directly
+  (set! (.-data plot-el) (clj->js data))
+  (set! (.-layout plot-el) (clj->js layout))
+  ;; Sometimes redraw breaks, in which case we just need a new plot.
+  (try
+    (js/Plotly.redraw plot-el)
+    (catch :default e
+      (plotly-new-plot plot-el props))))
+
+;; Lifecycle handlers
 (defn plotly-render [] [:div.plot])
 
 (defn plotly-did-mount
   [listener this]
   (let [plot-el (reagent/dom-node this)
-        {:keys [data layout]} (reagent/props this)
+        props (reagent/props this)
         resize-listener #(js/Plotly.Plots.resize plot-el)]
-    (js/Plotly.newPlot plot-el (clj->js data) (clj->js layout))
+    (plotly-new-plot plot-el props)
     ;; Add the resize listener.
     (reset! listener resize-listener)
     (.addEventListener js/window "resize" resize-listener)))
 
 (defn plotly-will-unmount
   [listener this]
+  ;; Remove all Plotly data (including Plotly events)
+  (js/Plotly.purge (reagent/dom-node this))
   ;; Kill the resize listener.
   (when-not (nil? @listener)
     (.removeEventListener js/window "resize" @listener)
@@ -30,15 +70,8 @@
 (defn plotly-did-update
   [this]
   (let [plot-el (reagent/dom-node this)
-        {:keys [data layout]} (reagent/props this)]
-    ;; A little hacky, but plotly usually works if we edit the data directly
-    (set! (.-data plot-el) (clj->js data))
-    (set! (.-layout plot-el) (clj->js layout))
-    ;; Sometimes redraw breaks, in which case we just need a new plot.
-    (try
-      (js/Plotly.redraw plot-el)
-      (catch :default e
-        (js/Plotly.newPlot plot-el (clj->js data) (clj->js layout))))))
+        props (reagent/props this)]
+    (plotly-update-plot plot-el props)))
 
 (defn plotly
   []
