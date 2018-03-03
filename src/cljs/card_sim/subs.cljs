@@ -29,9 +29,12 @@
 
 (re-frame/reg-sub
   ::simulation-graph
-  (fn [db]
-    {:data [(build-histogram-trace (get-in db [:simulation :bins [0 0]]))]
-     :layout {}}))
+  ;; This has to support dynamic subscriptions *and* regular subscriptions
+  (fn [db [_ bins-key] [dynamic-bins-key]]
+    (let [bins-key (or bins-key dynamic-bins-key [0 0])
+          data (get-in db [:simulation :bins bins-key])]
+      {:data [(build-histogram-trace data)]
+       :layout {}})))
 
 (re-frame/reg-sub
   ::simulation-heatmap
