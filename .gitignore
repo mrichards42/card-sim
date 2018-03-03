@@ -1,3 +1,6 @@
+# vim
+*.swp
+
 # re-frame-template default gitignore
 /*.log
 /target
