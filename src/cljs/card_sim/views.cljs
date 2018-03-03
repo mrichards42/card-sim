@@ -66,7 +66,7 @@
   "Card list component with a subscription."
   [subscribe-args]
    (let [deck (re-frame/subscribe subscribe-args)]
-     (static-card-list @deck)))
+     [static-card-list @deck]))
 
 ;;; Simulation components
 
