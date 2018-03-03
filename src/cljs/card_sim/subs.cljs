@@ -1,6 +1,7 @@
 (ns card-sim.subs
   (:require [re-frame.core :as re-frame]
-            [card-sim.stats :as stats]))
+            [card-sim.stats :as stats]
+            [card-sim.util :as util]))
 
 (re-frame/reg-sub
  ::deck
@@ -23,7 +24,7 @@
    :y (map second (keys data))
    :z (map stats-func (vals data))})
 
-(def default-stats-func stats/freq-mean)
+(def default-stats-func :mean)
 (def heatmap-stats-func {:mean stats/freq-mean
                          :median stats/freq-median})
 
@@ -32,17 +33,26 @@
   ;; This has to support dynamic subscriptions *and* regular subscriptions
   (fn [db [_ bins-key] [dynamic-bins-key]]
     (let [bins-key (or bins-key dynamic-bins-key [0 0])
-          data (get-in db [:simulation :bins bins-key])]
+          data (get-in db [:simulation :bins bins-key])
+          title (str "Round length after "
+                     (util/pluralize (first bins-key) " gem")
+                     " and " (util/pluralize (second bins-key) " hazard")
+                     "<br><i>n = " n "<i>")]
       {:data [(build-histogram-trace data)]
-       :layout {}})))
+       :layout {:title title}})))
 
 (re-frame/reg-sub
   ::simulation-heatmap
   (fn [db [_ stats-func]]
     (let [data (get-in db [:simulation :bins])
-          stats-func (get heatmap-stats-func stats-func default-stats-func)]
+          stats-kw (or stats-func default-stats-func)
+          stats-func (get heatmap-stats-func stats-kw)
+          title (str (util/ucfirst (name stats-kw))
+                     " round length after x gems and y hazards"
+                     "<br><i>click to view detail in the histogram</i>")]
       ;; This is a Plotly heatmap map of good cards (x) and bad cards (y),
       ;; with average round length (z) as the mapped dimension.
-      {:layout {}
-       :data [(build-heatmap-trace data stats-func)]})))
-
+      {:data [(build-heatmap-trace data stats-func)]
+       :layout {:title title
+                :xaxis {:title "Gems"}
+                :yaxis {:title "Hazards"}}})))
