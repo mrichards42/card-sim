@@ -31,10 +31,14 @@
   [this]
   (let [plot-el (reagent/dom-node this)
         {:keys [data layout]} (reagent/props this)]
-    ;; A little hacky, but plotly will work fine if we edit the data directly
+    ;; A little hacky, but plotly usually works if we edit the data directly
     (set! (.-data plot-el) (clj->js data))
     (set! (.-layout plot-el) (clj->js layout))
-  (js/Plotly.redraw plot-el)))
+    ;; Sometimes redraw breaks, in which case we just need a new plot.
+    (try
+      (js/Plotly.redraw plot-el)
+      (catch :default e
+        (js/Plotly.newPlot plot-el (clj->js data) (clj->js layout))))))
 
 (defn plotly
   []
