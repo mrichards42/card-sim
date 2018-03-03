@@ -9,6 +9,17 @@
  (fn  [_ _]
    db/default-db))
 
+
+(defn update-simulation-map
+  "Update the db with the result of a single simulation."
+  [db cards]
+  (let [card-count (count cards)]
+    (-> db
+        ;; Set the most recent round.
+        (assoc-in [:simulation :last-round] cards)
+        ;; Update statistics.
+        (update-in [:simulation :bins card-count] (fnil inc 0)))))
+
 ;; re-render the dom after this many iterations
 (def dom-refresh-interval 1000)
 
@@ -16,12 +27,7 @@
   "Run the simulation a number of times, returning the modified db."
   ;; Run a single simulation.
   ([db deck]
-   (let [cards (game/deal-round deck)]
-     (-> db
-         ; set the most recent round
-         (assoc-in [:simulation :last-round] cards)
-         ; and update the bins with the length of this round
-         (update-in [:simulation :bins (count cards)] (fnil inc 0)))))
+   (update-simulation-map db (game/deal-round deck)))
   ;; Run multiple simulations.
   ([db deck i]
    (cond
