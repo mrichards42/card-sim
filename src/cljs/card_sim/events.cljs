@@ -47,5 +47,5 @@
 (re-frame/reg-event-db
   ::reset-simulation
   (fn [db _]
-    (update db :simulation merge {:last-round [] :bins {}})))
+    (update db :simulation merge db/empty-simulation)))
 
