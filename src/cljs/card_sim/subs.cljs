@@ -69,7 +69,7 @@
                          :median stats/freq-median})
 
 (re-frame/reg-sub
-  ::simulation-graph
+  ::simulation-histogram
   ;; This has to support dynamic subscriptions *and* regular subscriptions
   (fn [db [_ bins-key] [dynamic-bins-key]]
     (let [bins-key (or bins-key dynamic-bins-key [0 0])

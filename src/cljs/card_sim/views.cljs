@@ -15,19 +15,19 @@
   ([bins-key]
    (simulation-histogram bins-key {}))
   ([bins-key events]
-   ;; Dynamic subscription to simulation-graph
-   (let [graph-data (re-frame/subscribe [::subs/simulation-graph] [bins-key])]
-     (fn [] [plotly/plot (into @graph-data events)]))))
+   ;; Dynamic subscription to simulation-histogram
+   (let [data (re-frame/subscribe [::subs/simulation-histogram] [bins-key])]
+     (fn [] [plotly/plot (into @data events)]))))
 
 (defn simulation-heatmap
   "A heatmap of average round-length for any point in the round."
   ([stats-func]
    (simulation-heatmap stats-func {}))
   ([stats-func events]
-   (let [graph-data (re-frame/subscribe [::subs/simulation-heatmap stats-func])]
-     (fn [] [plotly/plot (into @graph-data events)]))))
+   (let [data (re-frame/subscribe [::subs/simulation-heatmap stats-func])]
+     (fn [] [plotly/plot (into @data events)]))))
 
-(defn simulation-graphs
+(defn simulation-plots
   "Combination of heatmap and detail histogram."
   []
   (let [detail-key (reagent/atom [0 0])
@@ -36,7 +36,7 @@
                         (let [point (-> data .-points (aget 0))]
                           (reset! detail-key [(.-x point) (.-y point)])))]
     (fn []
-      [:div.graph-container
+      [:div.plot-container
        [simulation-heatmap :mean {:on-plotly-click click-handler}]
        ;; Note this is *not* derefed since we're using this ratom as a dynamic
        ;; subscription in the simulation-histogram component.
@@ -69,5 +69,5 @@
    [:div "All cards" [card/card-list [::subs/deck]]]
    [simulation-contols]
    [:div "Last round" [card/card-list [::subs/last-round]]]
-   [simulation-graphs]])
+   [simulation-plots]])
 

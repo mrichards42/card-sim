@@ -81,10 +81,10 @@
                   :layout {}
                   :on-plotly-click (fn [])}]
 
-  Typically graph data should come from a re-frame subscription:
+  Typically plot data should come from a re-frame subscription:
 
-    (let [graph-data (re-frame/subscribe [::subs/my-graph])]
-      [plotly/plot (into @graph-data {:on-plotly-click (fn [])})])"
+    (let [data (re-frame/subscribe [::subs/my-plot])]
+      [plotly/plot (into @data {:on-plotly-click (fn [])})])"
   []
   ;; Keep a reference to the window resize listener so we can remove it when
   ;; the component unmounts.
