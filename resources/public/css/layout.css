@@ -41,3 +41,27 @@ html, body, #app {
   height: 100%;
 }
 
+
+/* Simulation controls */
+
+.sim-control {
+  background: lightgray;
+  padding: 1em;
+  display: flex;
+  flex-flow: row wrap;
+  align-items: center;
+  justify-content: flex-start;
+}
+
+.sim-control > * {
+  flex: none;
+  margin: 0 0.25em;
+}
+
+.sim-control__count {
+  width: 7em;
+}
+
+.sim-control label > * {
+  margin-left: 0.25em;
+}

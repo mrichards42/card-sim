@@ -56,7 +56,7 @@
   (let [simulation-count (reagent/atom 1)
         heatmap-aggregation (re-frame/subscribe [::subs/heatmap-aggregation])]
     (fn []
-      [:div
+      [:div.sim-control
        ; run simulation button
        [:button
         {:on-click (fn []
@@ -64,7 +64,8 @@
                                              @simulation-count]))}
         "Run Simulation(s)"]
        ; simulation count input
-       [:input {:type "number"
+       [:input {:class "sim-control__count"
+                :type "number"
                 :value @simulation-count
                 :on-change #(reset! simulation-count (-> % .-target .-value))}]
        ; reset simulation button
