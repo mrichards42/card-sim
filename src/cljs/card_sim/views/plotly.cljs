@@ -20,7 +20,7 @@
 
 (defn rebind-events
   "Remove all events from the plotly element and bind new events."
-  [plot-el props]
+  [^js/Plotly plot-el props]
   (.removeAllListeners plot-el)
   (doseq [[event-name handler] (plotly-events props)]
     (.on plot-el event-name handler)))
@@ -33,7 +33,7 @@
 
 (defn update-plot
   "Update an existing plot."
-  [plot-el {:keys [data layout] :as props}]
+  [^js/Plotly plot-el {:keys [data layout] :as props}]
   ;; A little hacky, but plotly usually works if we edit the data directly
   (set! (.-data plot-el) (clj->js data))
   (set! (.-layout plot-el) (clj->js layout))

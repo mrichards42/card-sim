@@ -2,7 +2,6 @@
   :dependencies [[org.clojure/clojure "1.8.0"]
                  [org.clojure/clojurescript "1.9.908"]
                  [reagent "0.7.0"]
-                 [cljsjs/plotly "1.30.0-0"] ; Just using this for the externs
                  [re-frame "0.10.5"]]
 
   :plugins [[lein-cljsbuild "1.1.5"]]
@@ -51,6 +50,7 @@
      :compiler     {:main            card-sim.core
                     :output-to       "resources/public/js/compiled/app.js"
                     :optimizations   :advanced
+                    :infer-externs   true
                     :closure-defines {goog.DEBUG false}
                     :pretty-print    false}}
 

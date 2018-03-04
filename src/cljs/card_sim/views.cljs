@@ -36,9 +36,11 @@
         heatmap-aggregation (re-frame/subscribe [::subs/heatmap-aggregation])
         ;; Update the detail histogram based on the last clicked heatmap value
         ;; or, if hovering, the value under the cursor
-        make-handler (fn [ratom] #(let [point (-> % .-points (aget 0))
-                                        new-key [(.-x point) (.-y point)]]
-                                    (reset! ratom new-key)))
+        make-handler (fn [ratom]
+                       (fn [^js/Plotly.MouseEvent data]
+                         (let [point (-> data .-points (aget 0))
+                               new-key [(.-x point) (.-y point)]]
+                           (reset! ratom new-key))))
         on-click (make-handler click-key)
         on-hover (make-handler hover-key)
         on-unhover #(reset! hover-key @click-key)]
