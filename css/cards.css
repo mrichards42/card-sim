@@ -1,0 +1,48 @@
+.card-list {
+  margin: 0;
+  padding: 0;
+}
+
+
+/* Card styles */
+
+.card {
+  margin: 5px;
+  visiblity: hidden;
+  font-size: 0.1px; /* Hide the text */
+  display: inline-block;
+}
+
+.card::before {
+  visibility: visible;
+  font-size: 1.5rem; /* show the icon */
+  display: inline-block;
+  background: cornsilk;
+  border: 2px solid darkgray;
+  border-radius: 0.25em;
+  padding: 2px;
+}
+
+.card--gem::before {
+  content: "\1F48E";    /* gem stone */
+}
+
+.card--spider::before {
+  content: "\1F578";    /* spider web */
+}
+
+.card--fire::before {
+  content: "\1F525";    /* flame */
+}
+
+.card--snake::before {
+  content: "\1F40D";    /* snake */
+}
+
+.card--mummy::before {
+  content: "\1F480";    /* skull */
+}
+
+.card--rocks::before {
+  content: "\1F4A3";    /* bomb -- there's nothing closet to rocks */
+}
