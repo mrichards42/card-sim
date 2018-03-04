@@ -56,12 +56,13 @@
   (let [simulation-count (reagent/atom 1)
         heatmap-aggregation (re-frame/subscribe [::subs/heatmap-aggregation])]
     (fn []
-      [:div.sim-control
+      [:form.sim-control
+       {:action "javascript:void(0)"
+        :on-submit #(re-frame/dispatch [::events/run-simulation
+                                        @simulation-count])}
        ; run simulation button
        [:button
-        {:on-click (fn []
-                     (re-frame/dispatch [::events/run-simulation
-                                             @simulation-count]))}
+        {:type "submit"}
         "Run Simulation(s)"]
        ; simulation count input
        [:input {:class "sim-control__count"
@@ -70,7 +71,8 @@
                 :on-change #(reset! simulation-count (-> % .-target .-value))}]
        ; reset simulation button
        [:button
-        {:on-click #(re-frame/dispatch [::events/reset-simulation])}
+        {:type "button"
+         :on-click #(re-frame/dispatch [::events/reset-simulation])}
         "Reset"]
        ; heatmap aggregation drop-down
        [:label
