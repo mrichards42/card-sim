@@ -3,6 +3,10 @@
   (:require [reagent.core :as reagent]
             [clojure.string :as str]))
 
+(defn plot-node
+  [this]
+  (-> this reagent/dom-node .-firstChild))
+
 (defn plotly-events
   "Return a sequence of [event-name handler] pairs of Plotly events."
   [props]
@@ -39,14 +43,13 @@
     (catch :default e
       (new-plot plot-el props))))
 
-
 ;;; Lifecycle handlers
 
-(defn plot-render [] [:div.plotly-plot])
+(defn plot-render [] [:div.rf-plotly-wrapper [:div.rf-plotly-plot]])
 
 (defn plot-did-mount
   [listener this]
-  (let [plot-el (reagent/dom-node this)
+  (let [plot-el (plot-node this)
         props (reagent/props this)
         resize-listener #(js/Plotly.Plots.resize plot-el)]
     (new-plot plot-el props)
@@ -57,7 +60,7 @@
 (defn plot-will-unmount
   [listener this]
   ;; Remove all Plotly data (including Plotly events)
-  (js/Plotly.purge (reagent/dom-node this))
+  (js/Plotly.purge (plot-node this))
   ;; Kill the resize listener.
   (when-not (nil? @listener)
     (.removeEventListener js/window "resize" @listener)
@@ -65,7 +68,7 @@
 
 (defn plot-did-update
   [this]
-  (let [plot-el (reagent/dom-node this)
+  (let [plot-el (plot-node this)
         props (reagent/props this)]
     (update-plot plot-el props)))
 
