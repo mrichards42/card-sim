@@ -3,6 +3,7 @@
 
 (def empty-simulation
   {:bins {}
+   :aggregation :mean
    :last-round []
    :is-running false})
 

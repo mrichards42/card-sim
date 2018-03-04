@@ -101,3 +101,8 @@
   (fn [db _]
     (update db :simulation merge db/empty-simulation)))
 
+(re-frame/reg-event-db
+  ::set-aggregation
+  (fn [db [_ aggregation]]
+    (assoc-in db [:simulation :aggregation] (keyword aggregation))))
+

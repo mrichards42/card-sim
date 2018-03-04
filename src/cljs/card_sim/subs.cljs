@@ -12,6 +12,10 @@
   ::last-round
   (fn [db] (get-in db [:simulation :last-round])))
 
+(re-frame/reg-sub
+  ::heatmap-aggregation
+  (fn [db] (get-in db [:simulation :aggregation])))
+
 ;;; Plotly plots
 
 (defn labels-for
@@ -65,6 +69,7 @@
    :z (map stats-func (vals data))})
 
 (def default-stats-func :mean)
+
 (def heatmap-stats-func {:mean stats/freq-mean
                          :median stats/freq-median})
 
@@ -86,13 +91,13 @@
 
 (re-frame/reg-sub
   ::simulation-heatmap
-  (fn [db [_ stats-func]]
+  (fn [db [_ stats-func] [dynamic-stats-func]]
     (if (db/simulation-running? db)
       ;; This data takes a good deal of work to generate and display, so we'll
       ;; skip it until the simulation is done.
       {:layout {:title "(simulation in progress)"}}
       (let [data (get-in db [:simulation :bins])
-            stats-kw (or stats-func default-stats-func)
+            stats-kw (or dynamic-stats-func stats-func default-stats-func)
             stats-func (get heatmap-stats-func stats-kw)
             trace (build-heatmap-trace data stats-func)
             title (str (util/ucfirst (name stats-kw))
