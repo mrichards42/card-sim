@@ -87,7 +87,9 @@
                      " and " (util/pluralize (second bins-key) " hazard")
                      "<br><i>n = " n "<i>")]
       {:data [(with-labels trace pct :y)]
-       :layout {:title title}})))
+       :layout {:title title
+                :xaxis {:fixedrange true}
+                :yaxis {:fixedrange true}}})))
 
 (re-frame/reg-sub
   ::simulation-heatmap
@@ -107,7 +109,9 @@
         ;; with average round length (z) as the mapped dimension.
         {:data [trace]
          :layout {:title title
-                  :xaxis {:title "Gems"}
-                  :yaxis {:title "Hazards"}
+                  :xaxis {:title "Gems"
+                          :fixedrange true}
+                  :yaxis {:title "Hazards"
+                          :fixedrange true}
                   :annotations (heatmap-annotations trace)}}))))
 
