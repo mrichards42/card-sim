@@ -3,7 +3,10 @@
 
 (def empty-simulation
   {:bins {}
-   :last-round []})
+   :last-round []
+   :is-running false})
+
+(defn simulation-running?  [db] (get-in db [:simulation :is-running]))
 
 (def default-db
   {:deck game/default-deck

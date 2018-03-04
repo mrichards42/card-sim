@@ -74,20 +74,22 @@
    (update-simulation-map db (game/deal-round deck)))
   ;; Run multiple simulations.
   ([db deck i]
-   (cond
-     ;; last iteration
-     (<= i 0)
-     db
-     ;; re-render the dom
-     (= 0 (mod i dom-refresh-interval))
-     (do
-       ;; (1) dispatch another event with the remaining iterations
-       (re-frame/dispatch ^:flush-dom [::run-simulation (dec i)])
-       ;; (2) return the new db (thus ending this event handler)
-       (run-simulation db deck))
-     ;; next iteration
-     :else
-     (recur (run-simulation db deck) deck (dec i)))))
+   (loop [db (assoc-in db [:simulation :is-running] true)
+          i i]
+     (cond
+       ;; last iteration
+       (<= i 0)
+       (assoc-in db [:simulation :is-running] false)
+       ;; re-render the dom
+       (= 0 (mod i dom-refresh-interval))
+       (do
+         ;; (1) dispatch another event with the remaining iterations
+         (re-frame/dispatch ^:flush-dom [::run-simulation (dec i)])
+         ;; (2) return the new db (thus ending this event handler)
+         (run-simulation db deck))
+       ;; next iteration
+       :else
+       (recur (run-simulation db deck) (dec i))))))
 
 (re-frame/reg-event-db
   ::run-simulation

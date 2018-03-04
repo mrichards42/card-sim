@@ -1,6 +1,7 @@
 (ns card-sim.subs
   (:require [re-frame.core :as re-frame]
             [card-sim.stats :as stats]
+            [card-sim.db :as db]
             [card-sim.util :as util]))
 
 (re-frame/reg-sub
@@ -86,18 +87,22 @@
 (re-frame/reg-sub
   ::simulation-heatmap
   (fn [db [_ stats-func]]
-    (let [data (get-in db [:simulation :bins])
-          stats-kw (or stats-func default-stats-func)
-          stats-func (get heatmap-stats-func stats-kw)
-          trace (build-heatmap-trace data stats-func)
-          title (str (util/ucfirst (name stats-kw))
-                     " round length after x gems and y hazards"
-                     "<br><i>click to view detail in the histogram</i>")]
-      ;; This is a Plotly heatmap map of good cards (x) and bad cards (y),
-      ;; with average round length (z) as the mapped dimension.
-      {:data [trace]
-       :layout {:title title
-                :xaxis {:title "Gems"}
-                :yaxis {:title "Hazards"}
-                :annotations (heatmap-annotations trace)}})))
+    (if (db/simulation-running? db)
+      ;; This data takes a good deal of work to generate and display, so we'll
+      ;; skip it until the simulation is done.
+      {:layout {:title "(simulation in progress)"}}
+      (let [data (get-in db [:simulation :bins])
+            stats-kw (or stats-func default-stats-func)
+            stats-func (get heatmap-stats-func stats-kw)
+            trace (build-heatmap-trace data stats-func)
+            title (str (util/ucfirst (name stats-kw))
+                       " round length after x gems and y hazards"
+                       "<br><i>click to view detail in the histogram</i>")]
+        ;; This is a Plotly heatmap map of good cards (x) and bad cards (y),
+        ;; with average round length (z) as the mapped dimension.
+        {:data [trace]
+         :layout {:title title
+                  :xaxis {:title "Gems"}
+                  :yaxis {:title "Hazards"}
+                  :annotations (heatmap-annotations trace)}}))))
 
