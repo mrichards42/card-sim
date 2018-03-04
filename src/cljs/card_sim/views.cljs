@@ -31,18 +31,25 @@
 (defn simulation-plots
   "Combination of heatmap and detail histogram."
   []
-  (let [detail-key (reagent/atom [0 0])
+  (let [click-key (reagent/atom [0 0])
+        hover-key (reagent/atom @click-key)
         heatmap-aggregation (re-frame/subscribe [::subs/heatmap-aggregation])
-        ;; Set detail-key to the coords from the clicked heatmap value.
-        click-handler (fn [data]
-                        (let [point (-> data .-points (aget 0))]
-                          (reset! detail-key [(.-x point) (.-y point)])))]
+        ;; Update the detail histogram based on the last clicked heatmap value
+        ;; or, if hovering, the value under the cursor
+        make-handler (fn [ratom] #(let [point (-> % .-points (aget 0))
+                                        new-key [(.-x point) (.-y point)]]
+                                    (reset! ratom new-key)))
+        on-click (make-handler click-key)
+        on-hover (make-handler hover-key)
+        on-unhover #(reset! hover-key @click-key)]
     (fn []
       [:div.plot-container
        ;; Note that neither of the ratoms are derefed, since they're both
        ;; used in dynamic subscriptions.
-       [simulation-heatmap heatmap-aggregation {:on-plotly-click click-handler}]
-       [simulation-histogram detail-key]])))
+       [simulation-heatmap heatmap-aggregation {:on-plotly-click on-click
+                                                :on-plotly-hover on-hover
+                                                :on-plotly-unhover on-unhover}]
+       [simulation-histogram hover-key]])))
 
 (defn simulation-contols
   []
